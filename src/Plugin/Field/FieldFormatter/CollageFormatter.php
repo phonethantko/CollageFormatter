@@ -202,22 +202,22 @@ class CollageFormatter extends ImageFormatter {
     ];
 
     $modal_options = [];
-    if (module_exists('colorbox')) {
+    if (\Drupal::moduleHandler()->moduleExists('colorbox')) {
       $modal_options['colorbox'] = t('Colorbox');
     }
-    if (module_exists('shadowbox')) {
+    if (\Drupal::moduleHandler()->moduleExists('shadowbox')) {
       $modal_options['shadowbox'] = t('Shadowbox');
     }
-    if (module_exists('fancybox')) {
+    if (\Drupal::moduleHandler()->moduleExists('fancybox')) {
       $modal_options['fancybox'] = t('fancyBox');
     }
-    if (module_exists('photobox')) {
+    if (\Drupal::moduleHandler()->moduleExists('photobox')) {
       $modal_options['photobox'] = t('Photobox');
     }
-    if (module_exists('photoswipe')) {
+    if (\Drupal::moduleHandler()->moduleExists('photoswipe')) {
       $modal_options['photoswipe'] = t('PhotoSwipe');
     }
-    if (module_exists('lightbox2')) {
+    if (\Drupal::moduleHandler()->moduleExists('lightbox2')) {
       $modal_options['lightbox2'] = t('Lightbox2');
     }
     $form['image_link_modal'] = [
