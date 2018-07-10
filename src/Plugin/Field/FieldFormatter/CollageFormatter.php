@@ -259,10 +259,10 @@ class CollageFormatter extends ImageFormatter {
     ];
 
     $form['advanced'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => $this->t('Advanced settings'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => FALSE,
     ];
     $form['advanced']['original_image_reference'] = [
       '#type' => 'radios',
@@ -274,6 +274,27 @@ class CollageFormatter extends ImageFormatter {
         'copy' => $this->t('Copy'),
       ],
       '#default_value' => $this->getSetting('advanced')['original_image_reference'],
+    ];
+
+    $form['image_link_image_style']['#states'] = [
+      'visible' => [
+        ':input[name="fields[field_image][settings_edit_form][settings][image_link]"]' => ['value' => 'file'],
+      ],
+    ];
+    $form['image_link_modal']['#states'] = [
+      'visible' => [
+        ':input[name="fields[field_image][settings_edit_form][settings][image_link]"]' => ['value' => 'file'],
+      ],
+    ];
+    $form['image_link_class']['#states'] = [
+      'invisible' => [
+        ':input[name="fields[field_image][settings_edit_form][settings][image_link]"]' => ['value' => ''],
+      ],
+    ];
+    $form['image_link_rel']['#states'] = [
+      'invisible' => [
+        ':input[name="fields[field_image][settings_edit_form][settings][image_link]"]' => ['value' => ''],
+      ],
     ];
 
     return $form;
