@@ -1,0 +1,5 @@
+farbtastic:
+  js:
+    js/collageformatter.admin.js: {}
+  dependencies:
+    - core/jquery

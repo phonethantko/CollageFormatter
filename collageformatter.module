@@ -4,3 +4,33 @@
  * @file
  * Main file for Collage Formatter module.
  */
+
+// /**
+//  * Implements hook_theme()
+//  */
+// function collageformatter_theme() {
+//   return [
+//     'collageformatter_template' => [
+//       'variables' => [
+//         'url' => NULL,
+//       ],
+//       'template' => 'collageformatter-template',
+//     ],
+//   ];
+// }
+
+ // /**
+ //  * Implements hook_form_FORM_ID_alter().
+ //  */
+ // function collageformatter_form_field_ui_display_overview_form_alter(&$form, &$form_state) {
+ //   if (!empty($form_state['formatter_settings_edit'])) {
+ //     $field = $form_state['formatter_settings_edit'];
+ //     if ($form_state['input']['fields'][$field]['type'] == 'collageformatter') {
+ //       $form['fields'][$field]['format']['settings_edit_form']['actions']['flush'] = [
+ //         '#type' => 'submit',
+ //         '#value' => t('Flush generated images'),
+ //         '#submit' => ['collageformatter_flush_style_submit'],
+ //       ];
+ //     }
+ //   }
+ // }
