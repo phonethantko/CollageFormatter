@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * @file
  * Contains \Drupal\collageformatter\src\Plugin\Field\FieldFormatter\CollageFormatter.
@@ -17,7 +18,7 @@ use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 
-
+error_reporting(E_ALL & ~E_NOTICE);
 /**
  * Plugin implementation of the 'collageformatter' formatter.
  *
@@ -303,7 +304,7 @@ class CollageFormatter extends ImageFormatter {
   public function settingsSummary() {
     $settings = $this->getSettings();
     // TODO: Confirm whether the default settings are wanted.
-    $summary = parent::settingsSummary();
+    // $summary = parent::settingsSummary();
 
     $summary[] = t('Generate') . ' <strong>' . $settings['collage_number'] . '</strong> ' . t('collage(s)') . ' '
              . t('with') . ' <strong>' . ($settings['images_per_collage'] ? $settings['images_per_collage'] : t('all')) . '</strong> ' . t('image(s) per collage') . '; '
@@ -441,7 +442,6 @@ class CollageFormatter extends ImageFormatter {
     return $elements;
   }
 
-  // TODO: To write methods for recursive rendering
   /**
    * Returns renderable array of collages.
    */
@@ -456,13 +456,19 @@ class CollageFormatter extends ImageFormatter {
     foreach ($images as $delta => $image) {
       $image_properties = $image->_referringItem;
       if (!isset($image_properties->width) || !isset($image_properties->height)) $image += $image_info = $image->getFileUri() ?? $image_info;
-      // TODO: THINK OF A WAY TO DO THIS!
-      // $image_properties += [
-      //   // 'box_type' => 'image',
-      //   // 'delta' => $delta,
-      //   // 'total_width' => $image->width + 2 * $settings['border_size'] + $settings['gap_size'],
-      //   // 'total_height' => $image->height + 2 * $settings['border_size'] + $settings['gap_size'],
+      $image_properties->set('box_type', 'image');
+      $image_properties->set('delta', $delta);
+      $image_properties->set('total_width', $image_properties->width + 2 * $settings['border_size'] + $settings['gap_size']);
+      $image_properties->set('total_height', $image_properties->height + 2 * $settings['border_size'] + $settings['gap_size']);
+
+      // NOTE: Currently setting values individually. Find a way to set the whole array to the configs.
+      // $image->_referringItem += [
+      //   'box_type' => 'image',
+      //   'delta' => $delta,
+      //   'total_width' => $image_properties->width + 2 * $settings['border_size'] + $settings['gap_size'],
+      //   'total_height' => $image_properties->height + (2 * $settings['border_size']) + $settings['gap_size'],
       // ];
+
     }
 
     // Determine the number of collages and how many images to include in a collage
@@ -488,23 +494,23 @@ class CollageFormatter extends ImageFormatter {
 
       // Generate collage layout.
       $box = $this->collageformatter_layout_box($collage_images, $settings['collage_orientation']);
-      // Scale the collage.
-      if ($settings['collage_width']) {
-        $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
-        $dimensions = array('width' => $box['parent_total_width'] - $settings['gap_size']);
-        $box = $this->collageformatter_scale_box($box, $dimensions);
-        $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
-      }
-      elseif ($settings['collage_height']) {
-        $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
-        $dimensions = array('height' => $box['parent_total_height'] - $settings['gap_size']);
-        $box = $this->collageformatter_scale_box($box, $dimensions);
-        $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
-      }
-      else {
-        $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
-        $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
-      }
+    //   // Scale the collage.
+    //   if ($settings['collage_width']) {
+    //     $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
+    //     $dimensions = array('width' => $box['parent_total_width'] - $settings['gap_size']);
+    //     $box = $this->collageformatter_scale_box($box, $dimensions);
+    //     $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
+    //   }
+    //   elseif ($settings['collage_height']) {
+    //     $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
+    //     $dimensions = array('height' => $box['parent_total_height'] - $settings['gap_size']);
+    //     $box = $this->collageformatter_scale_box($box, $dimensions);
+    //     $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
+    //   }
+    //   else {
+    //     $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
+    //     $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
+    //   }
 
     //   // Resize the collage if both with and height are set.
     //   if ($settings['collage_width'] && $settings['collage_height']) {
@@ -598,7 +604,9 @@ class CollageFormatter extends ImageFormatter {
           'height' => $box[1]['total_height']
         ];
       }
-      $box[2] = $this->collageformatter_scale_box($box[2], $dimensions);
+      drupal_set_time_limit(300);
+
+      // $box[2] = $this->collageformatter_scale_box($box[2], $dimensions);
 
       if ($type) {
         // Horizontal contact; vertical box type.
@@ -619,8 +627,8 @@ class CollageFormatter extends ImageFormatter {
       $box[2]['siblings_total_height'] = $box[1]['total_height'];
     }
     elseif ($count == 1) {
-      $box = array_pop($images);
-      $box->get('pixel_check')->value = FALSE;
+      $box = [array_pop($images)];
+      $box['pixel_check'] = FALSE;
     }
 
     return $box;
@@ -630,6 +638,7 @@ class CollageFormatter extends ImageFormatter {
    * Recursive function to scale the box using only one dimension.
    */
   function collageformatter_scale_box($box, $dimensions) {
+
     // If it is an image - just scale it (change dimensions).
     if ($box['box_type'] == 'image') {
       if (array_key_exists('width', $dimensions)) {
