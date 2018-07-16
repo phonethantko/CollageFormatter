@@ -13,6 +13,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Image\Image;
+use Drupal\Core\Link;
+use Drupal\image\Entity\ImageStyle;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 
 use Drupal\Core\Url;
@@ -534,36 +536,36 @@ class CollageFormatter extends ImageFormatter {
         }
       }
 
-    //   $collage_wrapper_style = array();
-    //   $collage_wrapper_style[] = 'max-width: ' . round($box['parent_total_width'] + 2 * $settings['collage_border_size'] - 0.5) . 'px;';
-    //   // $collage_wrapper_style[] = 'box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;';
-    //
-    //   $collage_style = array();
-    //   // $collage_style[] = 'box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;';
-    //   if ($settings['collage_border_size']) {
-    //     $border = 'border: ' . $settings['collage_border_size'] . 'px solid';
-    //     $border .= $settings['collage_border_color'] ? ' ' . $settings['collage_border_color'] : '';
-    //     $collage_style[] = $border . ';';
-    //   }
-    //   if ($settings['gap_color']) {
-    //     $collage_style[] = 'background-color: ' . $settings['gap_color'] . ';';
-    //   }
-    //
-    //   $collage_wrapper_class = array('collageformatter-collage-wrapper');
-    //   if ($settings['image_link_modal'] == 'photoswipe') {
-    //     $collage_wrapper_class[] = 'photoswipe-gallery';
-    //   }
-    //
-    //   $collage[] = array(
-    //     '#theme' => 'collageformatter',
-    //     '#collage' => $this->collageformatter_render_box($box, $settings),
-    //     '#collage_wrapper_class' => implode(' ', $collage_wrapper_class),
-    //     '#collage_wrapper_style' => implode(' ', $collage_wrapper_style),
-    //     '#collage_style' => implode(' ', $collage_style),
-    //     '#collage_bottom_style' => 'clear: both; margin-bottom: ' . 100 * ($settings['gap_size'] / round($box['parent_total_width'] - 0.5)) . '%',
-    //   );
+      $collage_wrapper_style = [];
+      $collage_wrapper_style[] = 'max-width: ' . round($box['parent_total_width'] + 2 * $settings['collage_border_size'] - 0.5) . 'px;';
+      // $collage_wrapper_style[] = 'box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;';
+
+      $collage_style = [];
+      // $collage_style[] = 'box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;';
+      if ($settings['collage_border_size']) {
+        $border = 'border: ' . $settings['collage_border_size'] . 'px solid';
+        $border .= $settings['collage_border_color'] ? ' ' . $settings['collage_border_color'] : '';
+        $collage_style[] = $border . ';';
+      }
+      if ($settings['gap_color']) {
+        $collage_style[] = 'background-color: ' . $settings['gap_color'] . ';';
+      }
+
+      $collage_wrapper_class = ['collageformatter-collage-wrapper'];
+      if ($settings['image_link_modal'] == 'photoswipe') {
+        $collage_wrapper_class[] = 'photoswipe-gallery';
+      }
+
+      $collage[] = [
+        '#theme' => 'collageformatter',
+        '#collage' => $this->collageformatter_render_box($box, $settings),
+        '#collage_wrapper_class' => implode(' ', $collage_wrapper_class),
+        '#collage_wrapper_style' => implode(' ', $collage_wrapper_style),
+        '#collage_style' => implode(' ', $collage_style),
+        '#collage_bottom_style' => 'clear: both; margin-bottom: ' . 100 * ($settings['gap_size'] / round($box['parent_total_width'] - 0.5)) . '%',
+      ];
     }
-    $collage = [];
+
     return $collage;
   }
 
@@ -795,231 +797,270 @@ class CollageFormatter extends ImageFormatter {
     return $scale1 <= $scale2 ? $scale1 : $scale2;
   }
 
-  // /**
-  //  * Recursive function to render the box.
-  //  */
-  // function _collageformatter_render_box($box, $settings) {
-  //   $output = '';
-  //
-  //   // Check if parent dimensions changed - and change yourself.
-  //   if (array_key_exists('parent_box_orientation', $box)) {
-  //     if ($box['parent_box_orientation'] == 'vertical') {
-  //       $box['total_width'] = $box['parent_total_width'];
-  //     }
-  //     elseif ($box['parent_box_orientation'] == 'horizontal') {
-  //       $box['total_height'] = $box['parent_total_height'];
-  //     }
-  //   }
-  //
-  //   // Perform pixel check.
-  //   if ($box['pixel_check']) {
-  //     if ($box['parent_box_orientation'] == 'vertical') {
-  //       $pixels = round($box['parent_total_height'] - 0.5) - round($box['total_height'] - 0.5) - round($box['siblings_total_height'] - 0.5);
-  //       if ($pixels) {
-  //         $box['total_height'] += $pixels;
-  //       }
-  //     }
-  //     elseif ($box['parent_box_orientation'] == 'horizontal') {
-  //       $pixels = round($box['parent_total_width'] - 0.5) - round($box['total_width'] - 0.5) - round($box['siblings_total_width'] - 0.5);
-  //       if ($pixels) {
-  //         $box['total_width'] += $pixels;
-  //       }
-  //     }
-  //   }
-  //
-  //   // Ensure that children have correct parent dimensions.
-  //   if ($box['box_type'] == 'box') {
-  //     $box[1]['parent_total_height'] = $box[2]['parent_total_height'] = $box['total_height'];
-  //     $box[1]['parent_total_width'] = $box[2]['parent_total_width'] = $box['total_width'];
-  //   }
-  //
-  //   if ($box['box_type'] == 'box') {
-  //     $box_style = array(
-  //       'float: left;',
-  //       'max-width: ' . round($box['total_width'] - 0.5) . 'px;',
-  //     );
-  //     $box_style[] = 'width: ' . 100 * (round($box['total_width'] - 0.5) / (round($box['parent_total_width'] - 0.5))) . '%;';
-  //     $content[] = _collageformatter_render_box($box[1], $settings);
-  //     $content[] = _collageformatter_render_box($box[2], $settings);
-  //     $output = array(
-  //       '#theme' => 'collageformatter_collage_box',
-  //       '#box' => $content,
-  //       '#box_style' => implode(' ', $box_style),
-  //     );
-  //   }
-  //   elseif ($box['box_type'] == 'image') {
-  //     $image_uri = _collageformatter_image_file_check($box, $settings);
-  //
-  //     $image_style = array(
-  //       'display: block;',
-  //       'max-width: 100%;',
-  //       'height: auto;',
-  //       'margin: 0;',
-  //     );
-  //
-  //     // TODO: use theme('image_formatter', ... ?
-  //     $image = theme('image_style', array(
-  //       'style_name' => 'collageformatter',
-  //       'path' => $image_uri,
-  //       'alt' => $box['alt'],
-  //       'title' => $box['title'],
-  //       'attributes' => array(
-  //         'style' => implode(' ', $image_style),
-  //       ),
-  //     ));
-  //
-  //     // Create image derivatives.
-  //     if ($settings['generate_image_derivatives']) {
-  //       $derivative_uri = image_style_path('collageformatter', $image_uri);
-  //       if (!file_exists($derivative_uri)) {
-  //         $image_style = image_style_load('collageformatter');
-  //         if (!image_style_create_derivative($image_style, $image_uri, $derivative_uri)) {
-  //           watchdog('collageformatter', 'Unable to generate the derived image located at %path.', array('%path' => $derivative_uri));
-  //         }
-  //       }
-  //     }
-  //
-  //     $attached = array();
-  //     // Process image linking and modal gallery settings.
-  //     if ($settings['image_link'] == 'content') {
-  //       $class = $settings['image_link_class'] ? array($settings['image_link_class']) : array();
-  //       $rel = $settings['image_link_rel'];
-  //       $image = l($image,
-  //         $box['content_uri'],
-  //         array(
-  //           'attributes' => array(
-  //             'title' => $box['title'],
-  //             'class' => $class,
-  //             'rel' => $rel,
-  //           ),
-  //           'html' => TRUE,
-  //         )
-  //       );
-  //     }
-  //     elseif ($settings['image_link'] == 'file') {
-  //       $image_dimensions = array(
-  //         'width' => $box['width'],
-  //         'height' => $box['height'],
-  //       );
-  //       if (empty($settings['image_link_image_style'])) {
-  //         $image_url = file_create_url($box['uri']);
-  //       }
-  //       else {
-  //         $image_url = image_style_url($settings['image_link_image_style'], $box['uri']);
-  //         image_style_transform_dimensions($settings['image_link_image_style'], $image_dimensions);
-  //       }
-  //
-  //       $class = $settings['image_link_class'] ? array($settings['image_link_class']) : array();
-  //       $rel = $settings['image_link_rel'];
-  //       $attributes = array();
-  //       switch ($settings['image_link_modal']) {
-  //         case 'colorbox':
-  //           $class[] = 'colorbox';
-  //           $rel = 'colorbox-' . $settings['gallery'];
-  //           break;
-  //         case 'shadowbox':
-  //           $rel = 'shadowbox[' . $settings['gallery'] . ']';
-  //           break;
-  //         case 'fancybox':
-  //           $class[] = 'fancybox';
-  //           $attributes['data-fancybox-group'] = 'fancybox-' . $settings['gallery'];
-  //           break;
-  //         case 'photobox':
-  //           $class[] = 'photobox';
-  //           $attached = photobox_attached_resources();
-  //           $attributes['data-photobox-gallery'] = 'photobox-' . $settings['gallery'];
-  //           break;
-  //         case 'photoswipe':
-  //           $class[] = 'photoswipe';
-  //           photoswipe_load_assets();
-  //           $attributes['data-size'] = $image_dimensions['width'] . 'x' . $image_dimensions['height'];
-  //           break;
-  //         case 'lightbox2':
-  //           $rel = 'lightbox[' . $settings['gallery'] . ']';
-  //           break;
-  //         default:
-  //       }
-  //
-  //       $image = l($image, $image_url,
-  //         array(
-  //           'attributes' => array(
-  //             'title' => $box['title'],
-  //             'class' => $class,
-  //             'rel' => $rel,
-  //           ) + $attributes,
-  //           'html' => TRUE,
-  //         )
-  //       );
-  //     }
-  //
-  //     $image_wrapper_style = array(
-  //       'float: left;',
-  //       'max-width: ' . round($box['total_width'] - $settings['gap_size'] - 0.5) . 'px;',
-  //       'width: ' . 100 * (round($box['total_width'] - $settings['gap_size'] - 0.5) / round($box['parent_total_width'] - 0.5)) . '%;',
-  //     );
-  //     if ($settings['gap_size']) {
-  //       $margin_percentage = 100 * ($settings['gap_size'] / round($box['parent_total_width'] - 0.5));
-  //       $image_wrapper_style[] = 'margin: ' . $margin_percentage . '% 0 0 ' . $margin_percentage . '%;';
-  //     }
-  //     $border = '';
-  //     if ($settings['border_size']) {
-  //       $border = 'border: ' . $settings['border_size'] . 'px solid';
-  //       if ($settings['border_color']) {
-  //         $border .= ' ' . $settings['border_color'];
-  //       }
-  //       $border .= ';';
-  //     }
-  //     $output = array(
-  //       '#theme' => 'collageformatter_collage_image',
-  //       '#image' => $image,
-  //       '#image_wrapper_class' => array('collageformatter-collage-image-wrapper-' . $box['delta']),
-  //       '#image_wrapper_style' => implode(' ', $image_wrapper_style),
-  //       '#image_style' => $border,
-  //       '#attached' => $attached,
-  //     );
-  //   }
-  //
-  //   return $output;
-  // }
-  //
-  // /**
-  //  * Checks for/creates the original image reference file.
-  //  */
-  // function _collageformatter_image_file_check($box, $settings) {
-  //   $image_width = round($box['total_width'] - 2 * $settings['border_size'] - $settings['gap_size'] - 0.5);
-  //   $image_height = round($box['total_height'] - 2 * $settings['border_size'] - $settings['gap_size'] - 0.5);
-  //   $filename = $image_width . 'x' . $image_height . '_' . $settings['advanced']['original_image_reference'] . '_' . drupal_basename($box['uri']);
-  //
-  //   $directory = drupal_dirname(file_build_uri('collageformatter/' . file_uri_target($box['uri'])));
-  //   $image_uri = $directory . '/' . $filename;
-  //
-  //   if (!file_exists($image_uri)) {
-  //     if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-  //       if ($settings['advanced']['original_image_reference'] == 'symlink') {
-  //         if (!symlink(drupal_realpath($box['uri']), drupal_realpath($image_uri))) {
-  //           watchdog('collageformatter', 'Failed to symlink file @source to @destination.', array('@source' => $box['uri'], '@destination' => $image_uri));
-  //         }
-  //       }
-  //       elseif ($settings['advanced']['original_image_reference'] == 'copy') {
-  //         if (!file_unmanaged_copy($box['uri'], $image_uri, FILE_EXISTS_REPLACE)) {
-  //           watchdog('collageformatter', 'Failed to copy file from @source to @destination.', array('@source' => $box['uri'], '@destination' => $image_uri));
-  //         }
-  //       }
-  //       elseif ($settings['advanced']['original_image_reference'] == 'fake') {
-  //         $image = image_load($box['uri']);
-  //         image_effect_apply($image, array(
-  //           'effect callback' => 'image_scale_effect',
-  //           'data' => array(
-  //             'width' => 1,
-  //             'height' => 1,
-  //           ),
-  //         ));
-  //         image_save($image, $image_uri);
-  //       }
-  //     }
-  //   }
-  //
-  //   return $image_uri;
-  // }
+  /**
+   * Recursive function to render the box.
+   */
+  function collageformatter_render_box($box, $settings) {
+
+    $output = '';
+
+    // Check if parent dimensions changed - and change yourself.
+    if (array_key_exists('parent_box_orientation', $box)) {
+      if ($box['parent_box_orientation'] == 'vertical') {
+        $box['total_width'] = $box['parent_total_width'];
+      }
+      elseif ($box['parent_box_orientation'] == 'horizontal') {
+        $box['total_height'] = $box['parent_total_height'];
+      }
+    }
+
+    // Perform pixel check.
+    if ($box['pixel_check']) {
+      if ($box['parent_box_orientation'] == 'vertical') {
+        $pixels = round($box['parent_total_height'] - 0.5) - round($box['total_height'] - 0.5) - round($box['siblings_total_height'] - 0.5);
+        if ($pixels) {
+          $box['total_height'] += $pixels;
+        }
+      }
+      elseif ($box['parent_box_orientation'] == 'horizontal') {
+        $pixels = round($box['parent_total_width'] - 0.5) - round($box['total_width'] - 0.5) - round($box['siblings_total_width'] - 0.5);
+        if ($pixels) {
+          $box['total_width'] += $pixels;
+        }
+      }
+    }
+
+    // Ensure that children have correct parent dimensions.
+    if ($box['box_type'] == 'box') {
+      $box[1]['parent_total_height'] = $box[2]['parent_total_height'] = $box['total_height'];
+      $box[1]['parent_total_width'] = $box[2]['parent_total_width'] = $box['total_width'];
+    }
+
+    if ($box['box_type'] == 'box') {
+      $box_style = [
+        'float: left;',
+        'max-width: ' . round($box['total_width'] - 0.5) . 'px;',
+      ];
+      $box_style[] = 'width: ' . 100 * (round($box['total_width'] - 0.5) / (round($box['parent_total_width'] - 0.5))) . '%;';
+      $content[] = $this->collageformatter_render_box($box[1], $settings);
+      $content[] = $this->collageformatter_render_box($box[2], $settings);
+      $output = [
+        '#theme' => 'collageformatter_collage_box', // NOTE: Box theme
+        '#box' => $content,
+        '#box_style' => implode(' ', $box_style),
+      ];
+    }
+    elseif ($box['box_type'] == 'image') {
+      $image_uri = $this->collageformatter_image_file_check($box, $settings);
+
+      $image_style = [
+        'display: block;',
+        'max-width: 100%;',
+        'height: auto;',
+        'margin: 0;',
+      ];
+
+      // TODO: use theme('image_formatter', ... ?
+      // $image = theme('image_style', [
+      //   'style_name' => 'collageformatter',
+      //   'path' => $image_uri,
+      //   'alt' => $box['alt'],
+      //   'title' => $box['title'],
+      //   'attributes' => [
+      //     'style' => implode(' ', $image_style),
+      //   ],
+      // ]);
+      // $image = \Drupal::service('renderer')
+      //          ->render([
+      //            '#theme' => 'image_style',
+      //            '#style_name' => 'collageformatter',
+      //            '#path' => $image_uri,
+      //            '#alt' => $box['alt'],
+      //            '#title' => $box['title'],
+      //            '#attributes' => [
+      //              'style' => /*implode(' ', $image_style)*/ 'display: block;',
+      //            ],
+      //          ]);
+      $image = [
+         '#theme' => 'image_style',
+         '#style_name' => 'collageformatter',
+         '#path' => $image_uri,
+         '#alt' => $box['alt'],
+         '#title' => $box['title'],
+         '#attributes' => [
+           'style' => implode(' ', $image_style),
+         ],
+       ];
+
+      // Create image derivatives.
+      if ($settings['generate_image_derivatives']) {
+        $derivative_uri = ImageStyle::load('collageformatter')->buildUri($image_uri);
+        if (!file_exists($derivative_uri)) {
+          $image_style = ImageStyle::load('collageformatter');
+          if (!$image_style->createDerivative($image_uri, $derivative_uri)) {
+            \Drupal::logger('collageformatter')->notice('Unable to generate the derived image located at %path.', [
+              '%path' => $derivative_uri,
+            ]);
+          }
+        }
+      }
+
+      $attached = [];
+      // Process image linking and modal gallery settings.
+      if ($settings['image_link'] == 'content') {
+        $class = $settings['image_link_class'] ? [$settings['image_link_class']] : [];
+        $rel = $settings['image_link_rel'];
+        $image = Link::fromTextAndUrl($image,
+                  Url::fromUri($box['content_uri'], [
+                                'attributes' => [
+                                  'title' => $box['title'],
+                                  'class' => $class,
+                                  'rel' => $rel,
+                                ],
+                                'html' => TRUE,
+                              ]))->toString();
+      }
+      elseif ($settings['image_link'] == 'file') {
+        $image_dimensions = [
+          'width' => $box['width'],
+          'height' => $box['height'],
+        ];
+        if (empty($settings['image_link_image_style'])) {
+          $image_url = file_create_url($box['uri']);
+        }
+        else {
+          $image_url = ImageStyle::load($settings['image_link_image_style'])->buildUrl($box['uri']);
+          ImageStyle::load($settings['image_link_image_style'])->transformDimensions($image_dimensions);
+        }
+
+        $class = $settings['image_link_class'] ? [$settings['image_link_class']] : [];
+        $rel = $settings['image_link_rel'];
+        $attributes = [];
+        switch ($settings['image_link_modal']) {
+          case 'colorbox':
+            $class[] = 'colorbox';
+            $rel = 'colorbox-' . $settings['gallery'];
+            break;
+          case 'shadowbox':
+            $rel = 'shadowbox[' . $settings['gallery'] . ']';
+            break;
+          case 'fancybox':
+            $class[] = 'fancybox';
+            $attributes['data-fancybox-group'] = 'fancybox-' . $settings['gallery'];
+            break;
+          case 'photobox':
+            $class[] = 'photobox';
+            $attached = photobox_attached_resources();
+            $attributes['data-photobox-gallery'] = 'photobox-' . $settings['gallery'];
+            break;
+          case 'photoswipe':
+            $class[] = 'photoswipe';
+            photoswipe_load_assets();
+            $attributes['data-size'] = $image_dimensions['width'] . 'x' . $image_dimensions['height'];
+            break;
+          case 'lightbox2':
+            $rel = 'lightbox[' . $settings['gallery'] . ']';
+            break;
+          default:
+        }
+
+        $image = l($image, $image_url,
+          array(
+            'attributes' => array(
+              'title' => $box['title'],
+              'class' => $class,
+              'rel' => $rel,
+            ) + $attributes,
+            'html' => TRUE,
+          )
+        );
+        $image = Link::fromTextAndUrl($image,
+                  Url::fromUri($image_url, [
+                                'attributes' => [
+                                  'title' => $box['title'],
+                                  'class' => $class,
+                                  'rel' => $rel,
+                                ] + $attributes,
+                                'html' => TRUE,
+                              ]))->toString();
+      }
+
+      $image_wrapper_style = [
+        'float: left;',
+        'max-width: ' . round($box['total_width'] - $settings['gap_size'] - 0.5) . 'px;',
+        'width: ' . 100 * (round($box['total_width'] - $settings['gap_size'] - 0.5) / round($box['parent_total_width'] - 0.5)) . '%;',
+      ];
+      if ($settings['gap_size']) {
+        $margin_percentage = 100 * ($settings['gap_size'] / round($box['parent_total_width'] - 0.5));
+        $image_wrapper_style[] = 'margin: ' . $margin_percentage . '% 0 0 ' . $margin_percentage . '%;';
+      }
+      $border = '';
+      if ($settings['border_size']) {
+        $border = 'border: ' . $settings['border_size'] . 'px solid';
+        if ($settings['border_color']) {
+          $border .= ' ' . $settings['border_color'];
+        }
+        $border .= ';';
+      }
+      $output = array(
+        '#theme' => 'collageformatter_collage_image', // NOTE: Image theme
+        '#image' => $image,
+        '#image_wrapper_class' => ['collageformatter-collage-image-wrapper-' . $box['delta']],
+        '#image_wrapper_style' => implode(' ', $image_wrapper_style),
+        '#image_style' => $border,
+        '#attached' => $attached,
+      );
+    }
+
+    return $output;
+  }
+
+  /**
+   * Checks for/creates the original image reference file.
+   */
+  function collageformatter_image_file_check($box, $settings) {
+
+    $image_width = round($box['total_width'] - 2 * $settings['border_size'] - $settings['gap_size'] - 0.5);
+    $image_height = round($box['total_height'] - 2 * $settings['border_size'] - $settings['gap_size'] - 0.5);
+    $filesystem = \Drupal::service('file_system');
+    $filename = $image_width . 'x' . $image_height . '_' . $settings['advanced']['original_image_reference'] . '_' . $filesystem->basename($box['uri']);
+
+    $directory = $filesystem->dirname(file_build_uri('collageformatter/' . file_uri_target($box['uri'])));
+    $image_uri = $directory . '/' . $filename;
+
+    if (!file_exists($image_uri)) {
+      if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+        if ($settings['advanced']['original_image_reference'] == 'symlink') {
+          if (!symlink($filesystem->realpath($box['uri']), $filesystem->realpath($image_uri))) {
+            \Drupal::logger('collageformatter')->notice('Failed to symlink file @source to @destination.', [
+              '@source' => $box['uri'],
+              '@destination' => $image_uri,
+            ]);
+          }
+        }
+        elseif ($settings['advanced']['original_image_reference'] == 'copy') {
+          if (!file_unmanaged_copy($box['uri'], $image_uri, FILE_EXISTS_REPLACE)) {
+            \Drupal::logger('collageformatter')->notice('Failed to copy file from @source to @destination.', [
+              '@source' => $box['uri'],
+              '@destination' => $image_uri,
+            ]);
+          }
+        }
+        elseif ($settings['advanced']['original_image_reference'] == 'fake') {
+          $image = Drupal::service('image.factory')->get($box['uri']);
+          image_effect_apply($image, [
+            'effect callback' => 'image_scale_effect', // NOTE: Calls to the effect function()-->
+            'data' => [
+              'width' => 1,
+              'height' => 1,
+            ],
+          ]);
+          $image->save($image_uri);
+        }
+      }
+    }
+
+    return $image_uri;
+  }
 
 }

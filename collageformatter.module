@@ -5,19 +5,36 @@
  * Main file for Collage Formatter module.
  */
 
-// /**
-//  * Implements hook_theme()
-//  */
-// function collageformatter_theme() {
-//   return [
-//     'collageformatter_template' => [
-//       'variables' => [
-//         'url' => NULL,
-//       ],
-//       'template' => 'collageformatter-template',
-//     ],
-//   ];
-// }
+/**
+ * Implements hook_theme()
+ */
+function collageformatter_theme() {
+  return [
+    'collageformatter_collage' => [
+      'variables' => [
+        'collage' => NULL,
+        'collage_wrapper_class' => NULL,
+        'collage_wrapper_style' => NULL,
+        'collage_style' => NULL,
+        'collage_bottom_style' => NULL,
+      ],
+    ],
+    'collageformatter_collage_box' => [
+      'variables' => [
+        'box' => NULL,
+        'box_style' => NULL,
+      ],
+    ],
+    'collageformatter_collage_image' => [
+      'variables' => [
+        'image' => NULL,
+        'image_wrapper_class' => NULL,
+        'image_wrapper_style' => NULL,
+        'image_style' => NULL,
+      ],
+    ],
+  ];
+}
 
  // /**
  //  * Implements hook_form_FORM_ID_alter().
