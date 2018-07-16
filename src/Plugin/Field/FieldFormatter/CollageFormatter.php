@@ -68,7 +68,7 @@ class CollageFormatter extends ImageFormatter {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    // TODO: 确认是否要留着旧设置
+
     // $form = parent::settingsForm($form, $form_state);
     // drupal_map_assoc() has been removed in Drupal 8
     $options_0_50 = array_combine(range(0, 50), range(0, 50));
@@ -461,14 +461,14 @@ class CollageFormatter extends ImageFormatter {
       $image_properties->set('total_width', $image_properties->width + 2 * $settings['border_size'] + $settings['gap_size']);
       $image_properties->set('total_height', $image_properties->height + 2 * $settings['border_size'] + $settings['gap_size']);
 
-      // NOTE: Currently setting values individually. Find a way to set the whole array to the configs.
-      // $image->_referringItem += [
+      // NOTE: Currently setting values individually. Find a way to set the whole array to the configs. Look into $image_properties->setValue($values)
+      // $image_propertiesValues = $image_properties->getValue();
+      // $image_propertiesValues += [
       //   'box_type' => 'image',
       //   'delta' => $delta,
       //   'total_width' => $image_properties->width + 2 * $settings['border_size'] + $settings['gap_size'],
       //   'total_height' => $image_properties->height + (2 * $settings['border_size']) + $settings['gap_size'],
       // ];
-
     }
 
     // Determine the number of collages and how many images to include in a collage
@@ -494,46 +494,46 @@ class CollageFormatter extends ImageFormatter {
 
       // Generate collage layout.
       $box = $this->collageformatter_layout_box($collage_images, $settings['collage_orientation']);
-    //   // Scale the collage.
-    //   if ($settings['collage_width']) {
-    //     $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
-    //     $dimensions = array('width' => $box['parent_total_width'] - $settings['gap_size']);
-    //     $box = $this->collageformatter_scale_box($box, $dimensions);
-    //     $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
-    //   }
-    //   elseif ($settings['collage_height']) {
-    //     $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
-    //     $dimensions = array('height' => $box['parent_total_height'] - $settings['gap_size']);
-    //     $box = $this->collageformatter_scale_box($box, $dimensions);
-    //     $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
-    //   }
-    //   else {
-    //     $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
-    //     $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
-    //   }
+      // Scale the collage.
+      if ($settings['collage_width']) {
+        $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
+        $dimensions = ['width' => $box['parent_total_width'] - $settings['gap_size']];
+        $box = $this->collageformatter_scale_box($box, $dimensions);
+        $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
+      }
+      elseif ($settings['collage_height']) {
+        $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
+        $dimensions = ['height' => $box['parent_total_height'] - $settings['gap_size']];
+        $box = $this->collageformatter_scale_box($box, $dimensions);
+        $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
+      }
+      else {
+        $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
+        $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
+      }
 
-    //   // Resize the collage if both with and height are set.
-    //   if ($settings['collage_width'] && $settings['collage_height']) {
-    //     $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
-    //     $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
-    //     $dimensions = array(
-    //       'width' => $box['parent_total_width'] - $settings['gap_size'],
-    //       'height' => $box['parent_total_height'] - $settings['gap_size'],
-    //     );
-    //     $box = $this->collageformatter_resize_box($box, $dimensions);
-    //   }
-    //
-    //   // Check for upscaled images and prevent upscaling.
-    //   if ($settings['prevent_upscale']) {
-    //     $scale = $this->collageformatter_upscaling_check($box, $settings);
-    //     if ($scale < 1) {
-    //       $dimensions = array('width' => $scale * $box['total_width']);
-    //       $box = $this->collageformatter_scale_box($box, $dimensions);
-    //       $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
-    //       $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
-    //     }
-    //   }
-    //
+      // Resize the collage if both with and height are set.
+      if ($settings['collage_width'] && $settings['collage_height']) {
+        $box['parent_total_width'] = $settings['collage_width'] - 2 * $settings['collage_border_size'];
+        $box['parent_total_height'] = $settings['collage_height'] - 2 * $settings['collage_border_size'];
+        $dimensions = [
+          'width' => $box['parent_total_width'] - $settings['gap_size'],
+          'height' => $box['parent_total_height'] - $settings['gap_size'],
+        ];
+        $box = $this->collageformatter_resize_box($box, $dimensions);
+      }
+
+      // Check for upscaled images and prevent upscaling.
+      if ($settings['prevent_upscale']) {
+        $scale = $this->collageformatter_upscaling_check($box, $settings);
+        if ($scale < 1) {
+          $dimensions = ['width' => $scale * $box['total_width']];
+          $box = $this->collageformatter_scale_box($box, $dimensions);
+          $box['parent_total_width'] = $box['total_width'] + $settings['gap_size'];
+          $box['parent_total_height'] = $box['total_height'] + $settings['gap_size'];
+        }
+      }
+
     //   $collage_wrapper_style = array();
     //   $collage_wrapper_style[] = 'max-width: ' . round($box['parent_total_width'] + 2 * $settings['collage_border_size'] - 0.5) . 'px;';
     //   // $collage_wrapper_style[] = 'box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;';
@@ -555,7 +555,7 @@ class CollageFormatter extends ImageFormatter {
     //   }
     //
     //   $collage[] = array(
-    //     '#theme' => 'collageformatter_collage',
+    //     '#theme' => 'collageformatter',
     //     '#collage' => $this->collageformatter_render_box($box, $settings),
     //     '#collage_wrapper_class' => implode(' ', $collage_wrapper_class),
     //     '#collage_wrapper_style' => implode(' ', $collage_wrapper_style),
@@ -569,6 +569,9 @@ class CollageFormatter extends ImageFormatter {
 
   /**
    * Recursive function to build the layout.
+   * * @param $images
+   *   array - array of referenced entities to display, keyed by delta
+   *           entity referenced available via $entity->_referringItem
    * * @param $type
    *   boolean - TRUE for portrait (horizontal contact - vertical box type);
    *             FALSE for landscape (vertical contact - horizontal box type).
@@ -589,7 +592,7 @@ class CollageFormatter extends ImageFormatter {
       $box[1] = $this->collageformatter_layout_box($images1, !$type);
       $box[2] = $this->collageformatter_layout_box($images2, !$type);
       $box[1]['parent_box_orientation'] = $box[2]['parent_box_orientation'] = $box['box_orientation'];
-      $box[1]['pixel_check'] = FALSE;
+      $box[1]['pixel_check'] = FALSE; // NOTE: To find out what pixel_check does
       $box[2]['pixel_check'] = TRUE;
 
       if ($type) {
@@ -604,9 +607,8 @@ class CollageFormatter extends ImageFormatter {
           'height' => $box[1]['total_height']
         ];
       }
-      drupal_set_time_limit(300);
 
-      // $box[2] = $this->collageformatter_scale_box($box[2], $dimensions);
+      $box[2] = $this->collageformatter_scale_box($box[2], $dimensions);
 
       if ($type) {
         // Horizontal contact; vertical box type.
@@ -627,7 +629,10 @@ class CollageFormatter extends ImageFormatter {
       $box[2]['siblings_total_height'] = $box[1]['total_height'];
     }
     elseif ($count == 1) {
-      $box = [array_pop($images)];
+      // NOTE: This is the terminating block for recursion.
+      // FIXME: Currently, it is not confirmed the function is operating....
+      //      : Items popped from $images cannot be pushed onto the array $box...
+      $box = array_pop($images)->_referringItem->getValue();
       $box['pixel_check'] = FALSE;
     }
 
@@ -636,6 +641,10 @@ class CollageFormatter extends ImageFormatter {
 
   /**
    * Recursive function to scale the box using only one dimension.
+   * * @param $box
+   *   array - array of images boxed as configured
+   * * @param $dimensions
+   *   array - array containing dimensions i.e. - width and height (if any) of the box
    */
   function collageformatter_scale_box($box, $dimensions) {
 
@@ -698,64 +707,94 @@ class CollageFormatter extends ImageFormatter {
     return $box;
   }
 
-  // /**
-  //  * Recursive function to resize the box.
-  //  */
-  // function _collageformatter_resize_box($box, $dimensions) {
-  //   // If it is an image - just resize it (change dimensions).
-  //   if ($box['box_type'] == 'image') {
-  //     $box['total_width'] = $dimensions['width'];
-  //     $box['total_height'] = $dimensions['height'];
-  //     return $box;
-  //   }
-  //
-  //   // If it is a box - then it should consist of two box elements;
-  //   // Determine sizes of elements and resize them.
-  //
-  //   // Vertical box type; horizontal contact.
-  //   if ($box['box_orientation'] == 'vertical') {
-  //     $dimensions1 = array(
-  //       'width' => $dimensions['width'],
-  //       'height' => ($box[1]['total_height'] / ($box[1]['total_height'] + $box[2]['total_height'])) * $dimensions['height'],
-  //     );
-  //     $dimensions2 = array(
-  //       'width' => $dimensions['width'],
-  //       'height' => ($box[2]['total_height'] / ($box[1]['total_height'] + $box[2]['total_height'])) * $dimensions['height'],
-  //     );
-  //   }
-  //   // Horizontal box type; vertical contact.
-  //   elseif ($box['box_orientation'] == 'horizontal') {
-  //     $dimensions1 = array(
-  //       'width' => ($box[1]['total_width'] / ($box[1]['total_width'] + $box[2]['total_width'])) * $dimensions['width'],
-  //       'height' => $dimensions['height'],
-  //     );
-  //     $dimensions2 = array(
-  //       'width' => ($box[2]['total_width'] / ($box[1]['total_width'] + $box[2]['total_width'])) * $dimensions['width'],
-  //       'height' => $dimensions['height'],
-  //     );
-  //   }
-  //   $box[1] = _collageformatter_resize_box($box[1], $dimensions1);
-  //   $box[2] = _collageformatter_resize_box($box[2], $dimensions2);
-  //
-  //   if ($box['box_orientation'] == 'vertical') {
-  //     $box['total_height'] = $box[1]['total_height'] + $box[2]['total_height'];
-  //     $box['total_width'] = $box[1]['total_width'];
-  //   }
-  //   elseif ($box['box_orientation'] == 'horizontal') {
-  //     $box['total_width'] = $box[1]['total_width'] + $box[2]['total_width'];
-  //     $box['total_height'] = $box[1]['total_height'];
-  //   }
-  //
-  //   $box[1]['parent_total_width'] = $box[2]['parent_total_width'] = $box['total_width'];
-  //   $box[1]['parent_total_height'] = $box[2]['parent_total_height'] = $box['total_height'];
-  //   $box[1]['siblings_total_width'] = $box[2]['total_width'];
-  //   $box[1]['siblings_total_height'] = $box[2]['total_height'];
-  //   $box[2]['siblings_total_width'] = $box[1]['total_width'];
-  //   $box[2]['siblings_total_height'] = $box[1]['total_height'];
-  //
-  //   return $box;
-  // }
-  //
+  /**
+   * Recursive function to resize the box.
+   * * @param $box
+   *   array - array of images boxed as configured
+   * * @param $dimensions
+   *   array - array containing dimensions i.e. - width and height (if any) of the box
+   */
+  function collageformatter_resize_box($box, $dimensions) {
+    // If it is an image - just resize it (change dimensions).
+    if ($box['box_type'] == 'image') {
+      $box['total_width'] = $dimensions['width'];
+      $box['total_height'] = $dimensions['height'];
+      return $box;
+    }
+
+    // If it is a box - then it should consist of two box elements;
+    // Determine sizes of elements and resize them.
+
+    // Vertical box type; horizontal contact.
+    if ($box['box_orientation'] == 'vertical') {
+      $dimensions1 = [
+        'width' => $dimensions['width'],
+        'height' => ($box[1]['total_height'] / ($box[1]['total_height'] + $box[2]['total_height'])) * $dimensions['height'],
+      ];
+      $dimensions2 = [
+        'width' => $dimensions['width'],
+        'height' => ($box[2]['total_height'] / ($box[1]['total_height'] + $box[2]['total_height'])) * $dimensions['height'],
+      ];
+    }
+    // Horizontal box type; vertical contact.
+    elseif ($box['box_orientation'] == 'horizontal') {
+      $dimensions1 = [
+        'width' => ($box[1]['total_width'] / ($box[1]['total_width'] + $box[2]['total_width'])) * $dimensions['width'],
+        'height' => $dimensions['height'],
+      ];
+      $dimensions2 = [
+        'width' => ($box[2]['total_width'] / ($box[1]['total_width'] + $box[2]['total_width'])) * $dimensions['width'],
+        'height' => $dimensions['height'],
+      ];
+    }
+    $box[1] = $this->collageformatter_resize_box($box[1], $dimensions1);
+    $box[2] = $this->collageformatter_resize_box($box[2], $dimensions2);
+
+    if ($box['box_orientation'] == 'vertical') {
+      $box['total_height'] = $box[1]['total_height'] + $box[2]['total_height'];
+      $box['total_width'] = $box[1]['total_width'];
+    }
+    elseif ($box['box_orientation'] == 'horizontal') {
+      $box['total_width'] = $box[1]['total_width'] + $box[2]['total_width'];
+      $box['total_height'] = $box[1]['total_height'];
+    }
+
+    $box[1]['parent_total_width'] = $box[2]['parent_total_width'] = $box['total_width'];
+    $box[1]['parent_total_height'] = $box[2]['parent_total_height'] = $box['total_height'];
+    $box[1]['siblings_total_width'] = $box[2]['total_width'];
+    $box[1]['siblings_total_height'] = $box[2]['total_height'];
+    $box[2]['siblings_total_width'] = $box[1]['total_width'];
+    $box[2]['siblings_total_height'] = $box[1]['total_height'];
+
+    return $box;
+  }
+
+  /**
+   * Checks for upscaled images and returns the scaling factor.
+   * * @param $box
+   *   array - array of images boxed as configured
+   * * @param $settings
+   *   array - array containing settings/configurations
+   */
+  function collageformatter_upscaling_check($box, $settings) {
+    $scale1 = $scale2 = 1;
+    if ($box['box_type'] == 'box') {
+      $scale1 = $this->collageformatter_upscaling_check($box[1], $settings);
+      $scale2 = $this->collageformatter_upscaling_check($box[2], $settings);
+    }
+    elseif ($box['box_type'] == 'image') {
+      $width = $box['total_width'] - 2 * $settings['border_size'] - $settings['gap_size'];
+      $height = $box['total_height'] - 2 * $settings['border_size'] - $settings['gap_size'];
+      if ($box['width'] < $width) {
+        $scale1 = $box['width'] / $width;
+      }
+      if ($box['height'] < $height) {
+        $scale1 = $box['height'] / $height;
+      }
+    }
+    return $scale1 <= $scale2 ? $scale1 : $scale2;
+  }
+
   // /**
   //  * Recursive function to render the box.
   //  */
@@ -982,26 +1021,5 @@ class CollageFormatter extends ImageFormatter {
   //
   //   return $image_uri;
   // }
-  //
-  // /**
-  //  * Checks for upscaled images and returns the scaling factor.
-  //  */
-  // function _collageformatter_upscaling_check($box, $settings) {
-  //   $scale1 = $scale2 = 1;
-  //   if ($box['box_type'] == 'box') {
-  //     $scale1 = _collageformatter_upscaling_check($box[1], $settings);
-  //     $scale2 = _collageformatter_upscaling_check($box[2], $settings);
-  //   }
-  //   elseif ($box['box_type'] == 'image') {
-  //     $width = $box['total_width'] - 2 * $settings['border_size'] - $settings['gap_size'];
-  //     $height = $box['total_height'] - 2 * $settings['border_size'] - $settings['gap_size'];
-  //     if ($box['width'] < $width) {
-  //       $scale1 = $box['width'] / $width;
-  //     }
-  //     if ($box['height'] < $height) {
-  //       $scale1 = $box['height'] / $height;
-  //     }
-  //   }
-  //   return $scale1 <= $scale2 ? $scale1 : $scale2;
-  // }
+
 }
