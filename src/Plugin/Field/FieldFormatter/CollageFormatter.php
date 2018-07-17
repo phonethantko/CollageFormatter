@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * @file
  * Contains \Drupal\collageformatter\src\Plugin\Field\FieldFormatter\CollageFormatter.
@@ -16,7 +15,6 @@ use Drupal\Core\Image\Image;
 use Drupal\Core\Link;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
-
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 
@@ -395,7 +393,6 @@ class CollageFormatter extends ImageFormatter {
       $link_file = TRUE;
     }
     $image_style_setting = $this->getSetting('image_style');
-
     // Collect cache tags to be added for each item in the field.
     $base_cache_tags = [];
     if (!empty($image_style_setting)) {
@@ -429,7 +426,7 @@ class CollageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       $elements[$delta] = [
-        '#theme' => 'image_formatter', // NOTE: THEME TEMPLATE IS HERE!!!!!!!!!!! Have to implement hook function in the module.
+        //'#theme' => 'image_formatter', // NOTE: THEME TEMPLATE IS HERE!!!!!!!!!!! Have to implement hook function in the module.
         '#item' => $item,
         '#item_attributes' => $item_attributes,
         '#image_style' => $image_style_setting,
@@ -448,6 +445,7 @@ class CollageFormatter extends ImageFormatter {
    * Returns renderable array of collages.
    */
   public function collageformatter_render_collage($images, $settings) {
+
     $collage = [];
 
     // Remove images to skip
@@ -458,6 +456,8 @@ class CollageFormatter extends ImageFormatter {
     foreach ($images as $delta => $image) {
       $image_properties = $image->_referringItem;
       if (!isset($image_properties->width) || !isset($image_properties->height)) $image += $image_info = $image->getFileUri() ?? $image_info;
+      $image_properties->set('uri', $image->getFileUri());
+      $image_properties->set('content_uri', '/node/1');
       $image_properties->set('box_type', 'image');
       $image_properties->set('delta', $delta);
       $image_properties->set('total_width', $image_properties->width + 2 * $settings['border_size'] + $settings['gap_size']);
@@ -579,6 +579,7 @@ class CollageFormatter extends ImageFormatter {
    *             FALSE for landscape (vertical contact - horizontal box type).
    */
   function collageformatter_layout_box($images, $type) {
+
     $box = [];
     $count = count($images);
     if ($count >= 2) {
@@ -631,9 +632,6 @@ class CollageFormatter extends ImageFormatter {
       $box[2]['siblings_total_height'] = $box[1]['total_height'];
     }
     elseif ($count == 1) {
-      // NOTE: This is the terminating block for recursion.
-      // FIXME: Currently, it is not confirmed the function is operating....
-      //      : Items popped from $images cannot be pushed onto the array $box...
       $box = array_pop($images)->_referringItem->getValue();
       $box['pixel_check'] = FALSE;
     }
@@ -860,44 +858,24 @@ class CollageFormatter extends ImageFormatter {
         'margin: 0;',
       ];
 
-      // TODO: use theme('image_formatter', ... ?
-      // $image = theme('image_style', [
-      //   'style_name' => 'collageformatter',
-      //   'path' => $image_uri,
-      //   'alt' => $box['alt'],
-      //   'title' => $box['title'],
-      //   'attributes' => [
-      //     'style' => implode(' ', $image_style),
-      //   ],
-      // ]);
-      // $image = \Drupal::service('renderer')
-      //          ->render([
-      //            '#theme' => 'image_style',
-      //            '#style_name' => 'collageformatter',
-      //            '#path' => $image_uri,
-      //            '#alt' => $box['alt'],
-      //            '#title' => $box['title'],
-      //            '#attributes' => [
-      //              'style' => /*implode(' ', $image_style)*/ 'display: block;',
-      //            ],
-      //          ]);
-      $image = [
-         '#theme' => 'image_style',
-         '#style_name' => 'collageformatter',
-         '#path' => $image_uri,
-         '#alt' => $box['alt'],
-         '#title' => $box['title'],
-         '#attributes' => [
-           'style' => implode(' ', $image_style),
-         ],
-       ];
+      // $image = [
+      //    '#theme' => 'image_style',
+      //    '#style_name' => 'thumbnail',
+      //    '#path' => $image_uri,
+      //    '#alt' => $box['alt'],
+      //    '#title' => $box['title'],
+      //    '#attributes' => ['style' => implode(' ', $image_style)],
+      //  ];
+      // FIXME: This has to be rendered programmatically.
+      $image = '<img style="' . implode(' ', $image_style) . '" typeof="foaf:Image" src="' . $image_uri .
+                '" alt="' . $box['alt'] . '" title="' . $box['title'] . '" />';
 
       // Create image derivatives.
       if ($settings['generate_image_derivatives']) {
-        $derivative_uri = ImageStyle::load('collageformatter')->buildUri($image_uri);
+        $image_style = ImageStyle::load('collageformatter');
+        $derivative_uri = $image_style->buildUri($image_uri);
         if (!file_exists($derivative_uri)) {
-          $image_style = ImageStyle::load('collageformatter');
-          if (!$image_style->createDerivative($image_uri, $derivative_uri)) {
+          if (!$image_style->createDerivative(file_create_url($image_uri), $derivative_uri)) {
             \Drupal::logger('collageformatter')->notice('Unable to generate the derived image located at %path.', [
               '%path' => $derivative_uri,
             ]);
@@ -910,15 +888,18 @@ class CollageFormatter extends ImageFormatter {
       if ($settings['image_link'] == 'content') {
         $class = $settings['image_link_class'] ? [$settings['image_link_class']] : [];
         $rel = $settings['image_link_rel'];
-        $image = Link::fromTextAndUrl($image,
-                  Url::fromUri($box['content_uri'], [
-                                'attributes' => [
-                                  'title' => $box['title'],
-                                  'class' => $class,
-                                  'rel' => $rel,
-                                ],
-                                'html' => TRUE,
-                              ]))->toString();
+        // $image = Link::fromTextAndUrl($image,
+        //           Url::fromUri('/node/1', [
+        //                         'attributes' => [
+        //                           'title' => $box['title'],
+        //                           'class' => $class,
+        //                           'rel' => $rel,
+        //                         ],
+        //                         'html' => TRUE,
+        //                       ]))->toString();
+        // FIXME: Render HTML programmatically
+        $image = '<a href="' . $box['content_uri'] . '" title="' . $box['title'] .'" class="active ' . $class . '" rel="' .
+                 $rel . '">' . $image . '</a>';
       }
       elseif ($settings['image_link'] == 'file') {
         $image_dimensions = [
@@ -964,25 +945,19 @@ class CollageFormatter extends ImageFormatter {
           default:
         }
 
-        $image = l($image, $image_url,
-          array(
-            'attributes' => array(
-              'title' => $box['title'],
-              'class' => $class,
-              'rel' => $rel,
-            ) + $attributes,
-            'html' => TRUE,
-          )
-        );
-        $image = Link::fromTextAndUrl($image,
-                  Url::fromUri($image_url, [
-                                'attributes' => [
-                                  'title' => $box['title'],
-                                  'class' => $class,
-                                  'rel' => $rel,
-                                ] + $attributes,
-                                'html' => TRUE,
-                              ]))->toString();
+        // $image = Link::fromTextAndUrl($image,
+        //           Url::fromUri($image_url, [
+        //                         'attributes' => [
+        //                           'title' => $box['title'],
+        //                           'class' => $class,
+        //                           'rel' => $rel,
+        //                         ] + $attributes,
+        //                         'html' => TRUE,
+        //                       ]))->toString();
+        // FIXME: Render HTML programmatically
+        // FIXME: Add on properties if there are modules linked
+        $image = '<a href="' . $image_url . '" title="' . $box['title'] .'" class="' . $class . '" rel="' .
+                 $rel . '">' . $image . '</a>';
       }
 
       $image_wrapper_style = [
@@ -1002,14 +977,14 @@ class CollageFormatter extends ImageFormatter {
         }
         $border .= ';';
       }
-      $output = array(
+      $output = [
         '#theme' => 'collageformatter_collage_image', // NOTE: Image theme
         '#image' => $image,
         '#image_wrapper_class' => ['collageformatter-collage-image-wrapper-' . $box['delta']],
         '#image_wrapper_style' => implode(' ', $image_wrapper_style),
         '#image_style' => $border,
         '#attached' => $attached,
-      );
+      ];
     }
 
     return $output;
@@ -1062,5 +1037,7 @@ class CollageFormatter extends ImageFormatter {
 
     return $image_uri;
   }
+
+
 
 }

@@ -5,6 +5,8 @@
  * Main file for Collage Formatter module.
  */
 
+use Drupal\image\Entity\ImageStyle;
+
 /**
  * Implements hook_theme()
  */
@@ -36,18 +38,27 @@ function collageformatter_theme() {
   ];
 }
 
- // /**
- //  * Implements hook_form_FORM_ID_alter().
- //  */
- // function collageformatter_form_field_ui_display_overview_form_alter(&$form, &$form_state) {
- //   if (!empty($form_state['formatter_settings_edit'])) {
- //     $field = $form_state['formatter_settings_edit'];
- //     if ($form_state['input']['fields'][$field]['type'] == 'collageformatter') {
- //       $form['fields'][$field]['format']['settings_edit_form']['actions']['flush'] = [
- //         '#type' => 'submit',
- //         '#value' => t('Flush generated images'),
- //         '#submit' => ['collageformatter_flush_style_submit'],
- //       ];
- //     }
- //   }
- // }
+ /**
+  * Implements hook_form_FORM_ID_alter().
+  */
+ function collageformatter_form_field_ui_display_overview_form_alter(&$form, &$form_state) {
+   if (!empty($form_state['formatter_settings_edit'])) {
+     $field = $form_state['formatter_settings_edit'];
+     if ($form_state['input']['fields'][$field]['type'] == 'collageformatter') {
+       $form['fields'][$field]['format']['settings_edit_form']['actions']['flush'] = [
+         '#type' => 'submit',
+         '#value' => t('Flush generated images'),
+         '#submit' => ['collageformatter_flush_style_submit'],
+       ];
+     }
+   }
+ }
+
+ /**
+ * Flushes collageformatter style images.
+ */
+function collageformatter_flush_style_submit() {
+  $style = ImageStyle::load('collageformatter');
+  $style->flush();
+  drupal_set_message(t('Style %style has been flushed.', ['%style' => 'collageformatter']));
+}
