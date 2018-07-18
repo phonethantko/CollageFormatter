@@ -2,19 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\collageformatter\src\Plugin\ImageEffect\CollageFormatterEffect.
+ * Contains \Drupal\collageformatter\src\Plugin\ImageEffect\CollageFormatterImageEffect
  */
 
 namespace Drupal\collageformatter\Plugin\ImageEffect;
 
-use Drupal\Core\Annotation\Translation;
-use Drupal\image\Annotation\ImageEffect;
 use Drupal\image\ImageEffectBase;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\File\FileSystem;
+use Drupal\Core\Image\ImageInterface;
 
  /**
- * Desaturates (grayscale) an image resource.
+ * Description of the collageformatter image effect plugin.
  *
  * @ImageEffect(
  *   id = "collageformatter",
@@ -22,12 +21,13 @@ use Drupal\Core\File\FileSystem;
  *   description = @Translation("Desaturate converts an image to grayscale.")
  * )
  */
+
  class CollageFormatterEffect extends ImageEffectBase {
 
   /**
    * {@inheritdoc}
    */
-  public function applyEffect($image) {
+  public function applyEffect(ImageInterface $image) {
     if (Unicode::strpos(FileSystem::basename($image->source), '_copy_') !== FALSE
         || Unicode::strpos(FileSystem::basename($image->source), '_symlink_') !== FALSE
         || Unicode::strpos(FileSystem::basename($image->source), '_fake_') !== FALSE) {

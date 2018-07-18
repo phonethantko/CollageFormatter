@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * @file
  * Contains \Drupal\collageformatter\src\Plugin\Field\FieldFormatter\CollageFormatter.
@@ -452,6 +453,7 @@ class CollageFormatter extends ImageFormatter {
     if ($settings['images_to_skip']) {
       $images = array_slice($images, $settings['images_to_skip']);
     }
+
     // Prepare images.
     foreach ($images as $delta => $image) {
       $image_properties = $image->_referringItem;
@@ -850,6 +852,7 @@ class CollageFormatter extends ImageFormatter {
     }
     elseif ($box['box_type'] == 'image') {
       $image_uri = $this->collageformatter_image_file_check($box, $settings);
+      $style = ImageStyle::load('collageformatter');
 
       $image_style = [
         'display: block;',
@@ -872,10 +875,9 @@ class CollageFormatter extends ImageFormatter {
 
       // Create image derivatives.
       if ($settings['generate_image_derivatives']) {
-        $image_style = ImageStyle::load('collageformatter');
-        $derivative_uri = $image_style->buildUri($image_uri);
+        $derivative_uri = $style->buildUri($image_uri);
         if (!file_exists($derivative_uri)) {
-          if (!$image_style->createDerivative(file_create_url($image_uri), $derivative_uri)) {
+          if (!$style->createDerivative(file_create_url($image_uri), $derivative_uri)) {
             \Drupal::logger('collageformatter')->notice('Unable to generate the derived image located at %path.', [
               '%path' => $derivative_uri,
             ]);
