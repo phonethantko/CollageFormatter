@@ -157,13 +157,13 @@ class CollageFormatter extends ImageFormatter {
       '#type' => 'textfield',
       '#title' => t('Collage border color'),
       '#default_value' => $settings['collage_border_color'],
+      '#field_suffix' => '<div class="farbtastic-colorpicker"></div>',
       '#size' => 7,
       '#maxlength' => 7,
-      '#suffix' => '<div class="collageformatter-color-picker"></div>' . '</div>',
+      '#wrapper_attributes' => ['class' => ['collageformatter-farbtastic-color-selector']],
+      '#attributes' => ['class' => ['collageformatter-color-textfield']],
+      '#attached' => ['library' => ['collageformatter/collageformatter.farbtastic_color_selector']], // NOTE: Farbtastic is loaded here!
     ];
-    // TODO: Check whether the script is loaded
-    // FIXME: The script is not being loaded
-    $form['collage_border_color']['#attached']['library'][] = 'collageformatter/farbtastic';
 
     $form['gap_size'] = $form['collage_border_size'];
     $form['gap_size']['#title'] = t('Image gap');
@@ -559,7 +559,7 @@ class CollageFormatter extends ImageFormatter {
       }
 
       $collage[] = [
-        '#theme' => 'collageformatter',
+        '#theme' => 'collageformatter_collage',
         '#collage' => $this->collageformatter_render_box($box, $settings),
         '#collage_wrapper_class' => implode(' ', $collage_wrapper_class),
         '#collage_wrapper_style' => implode(' ', $collage_wrapper_style),
@@ -597,7 +597,7 @@ class CollageFormatter extends ImageFormatter {
       $box[1] = $this->collageformatter_layout_box($images1, !$type);
       $box[2] = $this->collageformatter_layout_box($images2, !$type);
       $box[1]['parent_box_orientation'] = $box[2]['parent_box_orientation'] = $box['box_orientation'];
-      $box[1]['pixel_check'] = FALSE; // NOTE: To find out what pixel_check does
+      $box[1]['pixel_check'] = FALSE;
       $box[2]['pixel_check'] = TRUE;
 
       if ($type) {
@@ -852,15 +852,15 @@ class CollageFormatter extends ImageFormatter {
     }
     elseif ($box['box_type'] == 'image') {
       $image_uri = $this->collageformatter_image_file_check($box, $settings);
-      $style = ImageStyle::load('collageformatter');
-
+      // $style = ImageStyle::load('collageformatter');
+      // kint($image_uri);
       $image_style = [
         'display: block;',
         'max-width: 100%;',
         'height: auto;',
         'margin: 0;',
       ];
-
+      // TODO: Attach the 'collageformatter' style.
       // $image = [
       //    '#theme' => 'image_style',
       //    '#style_name' => 'thumbnail',
@@ -870,7 +870,7 @@ class CollageFormatter extends ImageFormatter {
       //    '#attributes' => ['style' => implode(' ', $image_style)],
       //  ];
       // FIXME: This has to be rendered programmatically.
-      $image = '<img style="' . implode(' ', $image_style) . '" typeof="foaf:Image" src="' . $image_uri .
+      $image = '<img style="' . implode(' ', $image_style) . '" typeof="foaf:Image" src="' . file_create_url($image_uri) .
                 '" alt="' . $box['alt'] . '" title="' . $box['title'] . '" />';
 
       // Create image derivatives.

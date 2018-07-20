@@ -22,7 +22,7 @@ use Drupal\Core\Image\ImageInterface;
  * )
  */
 
- class CollageFormatterEffect extends ImageEffectBase {
+ class CollageFormatterImageEffect extends ImageEffectBase {
 
   /**
    * {@inheritdoc}
