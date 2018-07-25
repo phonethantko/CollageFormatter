@@ -70,8 +70,6 @@ class CollageFormatter extends ImageFormatter {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
 
-    // $form = parent::settingsForm($form, $form_state);
-    // drupal_map_assoc() has been removed in Drupal 8
     $options_0_50 = array_combine(range(0, 50), range(0, 50));
     $options_1_50 = array_combine(range(1, 50), range(1, 50));
     $settings = $this->getSettings();
@@ -160,9 +158,10 @@ class CollageFormatter extends ImageFormatter {
       '#field_suffix' => '<div class="farbtastic-colorpicker"></div>',
       '#size' => 7,
       '#maxlength' => 7,
-      '#wrapper_attributes' => ['class' => ['collageformatter-farbtastic-color-selector']],
-      '#attributes' => ['class' => ['collageformatter-color-textfield']],
-      '#attached' => ['library' => ['collageformatter/collageformatter.farbtastic_color_selector']], // NOTE: Farbtastic is loaded here!
+      '#suffix' => '</div>',
+      // '#wrapper_attributes' => ['class' => ['collageformatter-farbtastic-color-selector']],
+      // '#attributes' => ['class' => ['collageformatter-color-textfield']],
+      // '#attached' => ['library' => ['collageformatter/collageformatter.farbtastic_color_selector']], // NOTE: Farbtastic is loaded here!
     ];
 
     $form['gap_size'] = $form['collage_border_size'];
@@ -303,11 +302,10 @@ class CollageFormatter extends ImageFormatter {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $settings = $this->getSettings();
-    // TODO: Confirm whether the default settings are wanted.
-    // $summary = parent::settingsSummary();
 
-    $summary[] = t('Generate') . ' <strong>' . $settings['collage_number'] . '</strong> ' . t('collage(s)') . ' '
+    $settings = $this->getSettings();
+
+    $summary[] = t('Generate') . t('<strong>') . $settings['collage_number'] . t('</strong> ') . t('collage(s)') . ' '
              . t('with') . ' <strong>' . ($settings['images_per_collage'] ? $settings['images_per_collage'] : t('all')) . '</strong> ' . t('image(s) per collage') . '; '
              . t('Skip') . ' <strong>' . $settings['images_to_skip'] . '</strong> ' . t('image(s) from the start');
     $summary[] = t('Collage orientation') . ': ' . ($settings['collage_orientation'] ? t('Portrait') : t('Landscape'));
@@ -370,6 +368,7 @@ class CollageFormatter extends ImageFormatter {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+
     // $elements = parent::viewElements($items, $langcode);
     $elements = [];
     $files = $this->getEntitiesToView($items, $langcode);
@@ -814,7 +813,7 @@ class CollageFormatter extends ImageFormatter {
       }
     }
 
-    // Perform pixel check.
+    // Perform pixel check. // Pixel check has to be fixed!
     if ($box['pixel_check']) {
       if ($box['parent_box_orientation'] == 'vertical') {
         $pixels = round($box['parent_total_height'] - 0.5) - round($box['total_height'] - 0.5) - round($box['siblings_total_height'] - 0.5);
@@ -822,14 +821,14 @@ class CollageFormatter extends ImageFormatter {
           $box['total_height'] += $pixels;
         }
       }
-      elseif ($box['parent_box_orientation'] == 'horizontal') {
+      if ($box['parent_box_orientation'] == 'horizontal') {
         $pixels = round($box['parent_total_width'] - 0.5) - round($box['total_width'] - 0.5) - round($box['siblings_total_width'] - 0.5);
         if ($pixels) {
           $box['total_width'] += $pixels;
         }
       }
     }
-
+    dpm($box['total_width']. ' x '. $box['total_height']);
     // Ensure that children have correct parent dimensions.
     if ($box['box_type'] == 'box') {
       $box[1]['parent_total_height'] = $box[2]['parent_total_height'] = $box['total_height'];
@@ -845,22 +844,20 @@ class CollageFormatter extends ImageFormatter {
       $content[] = $this->collageformatter_render_box($box[1], $settings);
       $content[] = $this->collageformatter_render_box($box[2], $settings);
       $output = [
-        '#theme' => 'collageformatter_collage_box', // NOTE: Box theme
+        '#theme' => 'collageformatter_collage_box',
         '#box' => $content,
         '#box_style' => implode(' ', $box_style),
       ];
     }
     elseif ($box['box_type'] == 'image') {
       $image_uri = $this->collageformatter_image_file_check($box, $settings);
-      // $style = ImageStyle::load('collageformatter');
-      // kint($image_uri);
+      $style = ImageStyle::load('collageformatter');
       $image_style = [
         'display: block;',
         'max-width: 100%;',
         'height: auto;',
         'margin: 0;',
       ];
-      // TODO: Attach the 'collageformatter' style.
       // $image = [
       //    '#theme' => 'image_style',
       //    '#style_name' => 'thumbnail',
@@ -913,7 +910,7 @@ class CollageFormatter extends ImageFormatter {
         }
         else {
           $image_url = ImageStyle::load($settings['image_link_image_style'])->buildUrl($box['uri']);
-          ImageStyle::load($settings['image_link_image_style'])->transformDimensions($image_dimensions);
+          ImageStyle::load($settings['image_link_image_style'])->transformDimensions($image_dimensions, $image);
         }
 
         $class = $settings['image_link_class'] ? [$settings['image_link_class']] : [];
@@ -979,6 +976,7 @@ class CollageFormatter extends ImageFormatter {
         }
         $border .= ';';
       }
+
       $output = [
         '#theme' => 'collageformatter_collage_image', // NOTE: Image theme
         '#image' => $image,
@@ -1024,14 +1022,15 @@ class CollageFormatter extends ImageFormatter {
           }
         }
         elseif ($settings['advanced']['original_image_reference'] == 'fake') {
-          $image = Drupal::service('image.factory')->get($box['uri']);
-          image_effect_apply($image, [
-            'effect callback' => 'image_scale_effect', // NOTE: Calls to the effect function()-->
-            'data' => [
-              'width' => 1,
-              'height' => 1,
-            ],
-          ]);
+          $image = \Drupal::service('image.factory')->get($box['uri']);
+          // image_effect_apply($image, [
+          //   'effect callback' => 'image_scale_effect', // NOTE: Calls to the effect function()-->
+          //   'data' => [
+          //     'width' => 1,
+          //     'height' => 1,
+          //   ],
+          // ]);
+          $image->apply('image_scale_effect', ['width' => 1, 'height' => 1]);
           $image->save($image_uri);
         }
       }
