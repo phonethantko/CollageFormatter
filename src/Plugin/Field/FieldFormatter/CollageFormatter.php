@@ -159,9 +159,9 @@ class CollageFormatter extends ImageFormatter {
       '#size' => 7,
       '#maxlength' => 7,
       '#suffix' => '</div>',
-      // '#wrapper_attributes' => ['class' => ['collageformatter-farbtastic-color-selector']],
-      // '#attributes' => ['class' => ['collageformatter-color-textfield']],
-      // '#attached' => ['library' => ['collageformatter/collageformatter.farbtastic_color_selector']], // NOTE: Farbtastic is loaded here!
+      '#wrapper_attributes' => ['class' => ['collageformatter-farbtastic-color-selector']],
+      '#attributes' => ['class' => ['collageformatter-color-textfield']],
+      '#attached' => ['library' => ['collageformatter/collageformatter.farbtastic_color_selector']],
     ];
 
     $form['gap_size'] = $form['collage_border_size'];
@@ -426,7 +426,6 @@ class CollageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       $elements[$delta] = [
-        //'#theme' => 'image_formatter', // NOTE: THEME TEMPLATE IS HERE!!!!!!!!!!! Have to implement hook function in the module.
         '#item' => $item,
         '#item_attributes' => $item_attributes,
         '#image_style' => $image_style_setting,
@@ -716,6 +715,7 @@ class CollageFormatter extends ImageFormatter {
    *   array - array containing dimensions i.e. - width and height (if any) of the box
    */
   function collageformatter_resize_box($box, $dimensions) {
+
     // If it is an image - just resize it (change dimensions).
     if ($box['box_type'] == 'image') {
       $box['total_width'] = $dimensions['width'];
@@ -768,6 +768,7 @@ class CollageFormatter extends ImageFormatter {
     $box[2]['siblings_total_height'] = $box[1]['total_height'];
 
     return $box;
+
   }
 
   /**
@@ -778,6 +779,7 @@ class CollageFormatter extends ImageFormatter {
    *   array - array containing settings/configurations
    */
   function collageformatter_upscaling_check($box, $settings) {
+
     $scale1 = $scale2 = 1;
     if ($box['box_type'] == 'box') {
       $scale1 = $this->collageformatter_upscaling_check($box[1], $settings);
@@ -794,6 +796,7 @@ class CollageFormatter extends ImageFormatter {
       }
     }
     return $scale1 <= $scale2 ? $scale1 : $scale2;
+
   }
 
   /**
@@ -978,7 +981,7 @@ class CollageFormatter extends ImageFormatter {
       }
 
       $output = [
-        '#theme' => 'collageformatter_collage_image', // NOTE: Image theme
+        '#theme' => 'collageformatter_collage_image',
         '#image' => $image,
         '#image_wrapper_class' => ['collageformatter-collage-image-wrapper-' . $box['delta']],
         '#image_wrapper_style' => implode(' ', $image_wrapper_style),
@@ -1023,13 +1026,6 @@ class CollageFormatter extends ImageFormatter {
         }
         elseif ($settings['advanced']['original_image_reference'] == 'fake') {
           $image = \Drupal::service('image.factory')->get($box['uri']);
-          // image_effect_apply($image, [
-          //   'effect callback' => 'image_scale_effect', // NOTE: Calls to the effect function()-->
-          //   'data' => [
-          //     'width' => 1,
-          //     'height' => 1,
-          //   ],
-          // ]);
           $image->apply('image_scale_effect', ['width' => 1, 'height' => 1]);
           $image->save($image_uri);
         }
